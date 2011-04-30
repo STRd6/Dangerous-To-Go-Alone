@@ -5,19 +5,18 @@ Player = (I) ->
     speed: 4
     excludedModules: ["Movable"]
 
-  self = GameObject(I)
+  self = GameObject(I).extend
+    collisionBounds: (xOffset, yOffset) ->
+      x: I.x + (xOffset || 0) + collisionMargin.x
+      y: I.y + (yOffset || 0) + collisionMargin.y
+      width: I.width - 2 * collisionMargin.x
+      height: I.height - 2 * collisionMargin.y
 
   walkCycle = 0
 
   collisionMargin =
     x: 2
-    y: 2
-
-  collisionBounds = (xOffset, yOffset) ->
-    x: I.x + (xOffset || 0) + collisionMargin.x
-    y: I.y + (yOffset || 0) + collisionMargin.y
-    width: I.width - 2 * collisionMargin.x
-    height: I.height - 2 * collisionMargin.y
+    y: 2  
 
   self.bind "step", ->
     movement = Point(0, 0)
@@ -40,13 +39,13 @@ Player = (I) ->
       I.velocity = movement
 
       I.velocity.x.abs().times ->
-        if !engine.collides(collisionBounds(I.velocity.x.sign(), 0), self)
+        if !engine.collides(self.collisionBounds(I.velocity.x.sign(), 0), self)
           I.x += I.velocity.x.sign()
         else 
           I.velocity.x = 0
 
       I.velocity.y.abs().times ->
-        if !engine.collides(collisionBounds(0, I.velocity.y.sign()), self)
+        if !engine.collides(self.collisionBounds(0, I.velocity.y.sign()), self)
           I.y += I.velocity.y.sign()
         else 
           I.velocity.y = 0
