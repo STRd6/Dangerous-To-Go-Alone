@@ -2,8 +2,12 @@ Player = (I) ->
   $.reverseMerge I,
     width: 32
     height: 32
+    x: 160
+    y: 160
     speed: 4
     excludedModules: ["Movable"]
+
+  I.sprite = Sprite.loadByName("player")
 
   self = GameObject(I).extend
     collisionBounds: (xOffset, yOffset) ->
