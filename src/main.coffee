@@ -3,7 +3,9 @@ window.engine = Engine
   includedModules: "Tilemap"
 
 # Add a red square to the scene
-engine.loadMap "start"
+engine.loadMap "start", ->
+  engine.add
+    class: "Player"
 
 engine.start()
 
