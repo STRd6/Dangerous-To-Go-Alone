@@ -66,14 +66,21 @@ Player = (I) ->
         I.sprite = walkSprites.down.wrap((walkCycle/4).floor())
 
       if keydown.space
-        I.state.cat = true
+        target = facing.scale(32).add(self.center())
 
-        target = facing.scale(32)
+        catBounds =
+          x: target.x
+          y: target.y
+          width: 16
+          height: 16
 
-        engine.add
-          class: "Cat"
-          x: I.x + 8 + target.x
-          y: I.y + 8 + target.y
+        unless engine.collides catBounds
+          I.state.cat = true
+
+          engine.add
+            class: "Cat"
+            x: target.x
+            y: target.y
 
     if movement.equal(Point(0, 0))
       I.velocity = movement
