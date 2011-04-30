@@ -17651,6 +17651,80 @@ SpeechBox = function(I) {
   });
 })();;
 ;$(function(){ undefined });;
+var Cat;
+Cat = function(I) {
+  var collisionMargin, self, walkCycle, walkSprites;
+  $.reverseMerge(I, {
+    width: 16,
+    height: 16,
+    speed: 2,
+    excludedModules: ["Movable"]
+  });
+  collisionMargin = {
+    x: 1,
+    y: 1
+  };
+  walkCycle = 0;
+  I.sprite = Sprite.loadByName("cat");
+  walkSprites = {
+    up: [Sprite.loadByName("cat_walk_up0"), Sprite.loadByName("cat_walk_up1")],
+    right: [Sprite.loadByName("cat_walk_right0"), Sprite.loadByName("cat_walk_right1")],
+    down: [Sprite.loadByName("cat_walk_down0"), Sprite.loadByName("cat_walk_down1")],
+    left: [Sprite.loadByName("cat_walk_left0"), Sprite.loadByName("cat_walk_left1")]
+  };
+  self = GameObject(I).extend({
+    collisionBounds: function(xOffset, yOffset) {
+      return {
+        x: I.x + (xOffset || 0) + collisionMargin.x,
+        y: I.y + (yOffset || 0) + collisionMargin.y,
+        width: I.width - 2 * collisionMargin.x,
+        height: I.height - 2 * collisionMargin.y
+      };
+    }
+  });
+  self.bind("step", function() {
+    var movement, player;
+    movement = Point(0, 0);
+    if (keydown.left) {
+      movement = movement.add(Point(-1, 0));
+      I.sprite = walkSprites.left.wrap((walkCycle / 4).floor());
+    }
+    if (keydown.right) {
+      movement = movement.add(Point(1, 0));
+      I.sprite = walkSprites.right.wrap((walkCycle / 4).floor());
+    }
+    if (keydown.up) {
+      movement = movement.add(Point(0, -1));
+      I.sprite = walkSprites.up.wrap((walkCycle / 4).floor());
+    }
+    if (keydown.down) {
+      movement = movement.add(Point(0, 1));
+      I.sprite = walkSprites.down.wrap((walkCycle / 4).floor());
+    }
+    if (I.age > 10 && keydown.space) {
+      player = engine.find("Player").first();
+      if (player && Collision.rectangular(self.bounds(), player.collisionBounds())) {
+        I.active = false;
+        player.I.state.cat = false;
+        player.pickup(self);
+      }
+    }
+    if (movement.equal(Point(0, 0))) {
+      return (I.velocity = movement);
+    } else {
+      walkCycle += 1;
+      movement = movement.norm().scale(I.speed);
+      I.velocity = movement;
+      I.velocity.x.abs().times(function() {
+        return !engine.collides(self.collisionBounds(I.velocity.x.sign(), 0), self) ? I.x += I.velocity.x.sign() : (I.velocity.x = 0);
+      });
+      return I.velocity.y.abs().times(function() {
+        return !engine.collides(self.collisionBounds(0, I.velocity.y.sign()), self) ? I.y += I.velocity.y.sign() : (I.velocity.y = 0);
+      });
+    }
+  });
+  return self;
+};;
 var Door;
 Door = function(I) {
   var self;
@@ -17664,8 +17738,12 @@ Door = function(I) {
   self = GameObject(I);
   self.bind("step", function() {
     var player;
-    player = engine.find("Player").first();
-    if (Collision.rectangular(self.bounds(), player.collisionBounds())) {
+    if (I.cat) {
+      player = engine.find("Cat").first();
+    } else {
+      player = engine.find("Player").first();
+    }
+    if (player && Collision.rectangular(self.bounds(), player.collisionBounds())) {
       engine.loadMap(I.destination, function() {
         return engine.add(player.I);
       });
@@ -17676,6 +17754,56 @@ Door = function(I) {
     }
   });
   return self;
+};;
+var Drawable;
+/**
+The Drawable module is used to provide a simple draw method to the including
+object.
+
+Binds a default draw listener to draw a rectangle or a sprite, if one exists.
+
+Binds a step listener to update the transform of the object.
+
+Autoloads the sprite specified in I.spriteName, if any.
+
+@name Drawable
+@module
+@constructor
+
+@param {Object} I Instance variables
+@param {Object} self Reference to including object
+*/
+Drawable = function(I, self) {
+  I || (I = {});
+  $.reverseMerge(I, {
+    color: "#196",
+    spriteName: null
+  });
+  if (I.spriteName) {
+    I.sprite = Sprite.loadByName(I.spriteName, function(sprite) {
+      I.width = sprite.width;
+      return (I.height = sprite.height);
+    });
+  } else if (I.spriteURL) {
+    I.sprite = Sprite.fromURL(I.spriteURL, function(sprite) {
+      I.width = sprite.width;
+      return (I.height = sprite.height);
+    });
+  }
+  self.bind('step', function() {
+    var center;
+    center = self.center();
+    return I.rotation ? (I.transform = Matrix.translation(center.x, center.y).concat(Matrix.rotation(I.rotation)).concat(Matrix.translation(-I.width / 2, -I.height / 2))) : (I.transform = Matrix.translation(I.x, I.y));
+  });
+  self.bind('draw', function(canvas) {
+    if (I.sprite) {
+      return I.sprite.draw(canvas, 0, 0);
+    } else {
+      canvas.fillColor(I.color);
+      return canvas.fillRect(0, 0, I.width, I.height);
+    }
+  });
+  return {};
 };;
 /***
 The <code>Tilemap</code> module provides a way to load tilemaps in the engine.
@@ -17716,18 +17844,50 @@ Engine.Tilemap = function(I, self) {
     }
   };
 };;
+var Item;
+Item = function(I) {
+  var self;
+  $.reverseMerge(I, {
+    width: 16,
+    height: 16
+  });
+  self = GameObject(I);
+  self.bind("step", function() {
+    var player;
+    player = engine.find("Player").first();
+    if (Collision.rectangular(self.bounds(), player.collisionBounds())) {
+      if (I.active) {
+        player.pickup(self);
+        return (I.active = false);
+      }
+    }
+  });
+  return self;
+};;
 var Player;
 Player = function(I) {
-  var collisionMargin, self, walkCycle;
+  var collisionMargin, facing, pickupItem, pickupSprite, self, walkCycle, walkSprites;
   $.reverseMerge(I, {
     width: 32,
     height: 32,
     x: 160,
     y: 160,
+    state: {},
     speed: 4,
+    items: {
+      kitten: true
+    },
     excludedModules: ["Movable"]
   });
   I.sprite = Sprite.loadByName("player");
+  walkSprites = {
+    up: [Sprite.loadByName("walk_up0"), Sprite.loadByName("walk_up1")],
+    right: [Sprite.loadByName("walk_right0"), Sprite.loadByName("walk_right1")],
+    down: [Sprite.loadByName("walk_down0"), Sprite.loadByName("walk_down1")],
+    left: [Sprite.loadByName("walk_left0"), Sprite.loadByName("walk_left1")]
+  };
+  pickupSprite = Sprite.loadByName("player_get");
+  pickupItem = null;
   self = GameObject(I).extend({
     collisionBounds: function(xOffset, yOffset) {
       return {
@@ -17736,34 +17896,72 @@ Player = function(I) {
         width: I.width - 2 * collisionMargin.x,
         height: I.height - 2 * collisionMargin.y
       };
+    },
+    pickup: function(item) {
+      I.state.pickup = 45;
+      pickupItem = item;
+      I.items[item.I.name] = true;
+      return Sound.play("fanfare");
     }
   });
   walkCycle = 0;
+  facing = Point(0, 0);
   collisionMargin = {
     x: 2,
     y: 2
   };
+  self.bind("draw", function(canvas) {
+    return I.state.pickup && pickupItem ? pickupItem.I.sprite.draw(canvas, 8, -8) : null;
+  });
   self.bind("step", function() {
-    var movement;
+    var catBounds, movement, target;
     movement = Point(0, 0);
-    if (keydown.left) {
-      movement = movement.add(Point(-1, 0));
-    }
-    if (keydown.right) {
-      movement = movement.add(Point(1, 0));
-    }
-    if (keydown.up) {
-      movement = movement.add(Point(0, -1));
-    }
-    if (keydown.down) {
-      movement = movement.add(Point(0, 1));
+    if (I.state.pickup) {
+      I.state.pickup -= 1;
+      I.sprite = pickupSprite;
+    } else if (I.state.cat) {
+
+    } else {
+      if (keydown.left) {
+        movement = movement.add(Point(-1, 0));
+        I.sprite = walkSprites.left.wrap((walkCycle / 4).floor());
+      }
+      if (keydown.right) {
+        movement = movement.add(Point(1, 0));
+        I.sprite = walkSprites.right.wrap((walkCycle / 4).floor());
+      }
+      if (keydown.up) {
+        movement = movement.add(Point(0, -1));
+        I.sprite = walkSprites.up.wrap((walkCycle / 4).floor());
+      }
+      if (keydown.down) {
+        movement = movement.add(Point(0, 1));
+        I.sprite = walkSprites.down.wrap((walkCycle / 4).floor());
+      }
+      if (I.items.kitten && keydown.space) {
+        target = facing.scale(32).add(self.center()).subtract(Point(8, 8));
+        catBounds = {
+          x: target.x,
+          y: target.y,
+          width: 16,
+          height: 16
+        };
+        if (!(engine.collides(catBounds))) {
+          I.state.cat = true;
+          engine.add({
+            "class": "Cat",
+            x: target.x,
+            y: target.y
+          });
+        }
+      }
     }
     if (movement.equal(Point(0, 0))) {
       return (I.velocity = movement);
     } else {
       walkCycle += 1;
-      movement = movement.norm().scale(I.speed);
-      I.velocity = movement;
+      facing = movement.norm();
+      I.velocity = facing.scale(I.speed);
       I.velocity.x.abs().times(function() {
         return !engine.collides(self.collisionBounds(I.velocity.x.sign(), 0), self) ? I.x += I.velocity.x.sign() : (I.velocity.x = 0);
       });
@@ -17774,6 +17972,82 @@ Player = function(I) {
   });
   return self;
 };;
+
+var Sound = (function($) {
+  // TODO: detecting audio with canPlay is f***ed
+  // Hopefully get more robust later
+  // audio.canPlayType("audio/ogg") === "maybe" WTF?
+  // http://ajaxian.com/archives/the-doctor-subscribes-html-5-audio-cross-browser-support
+  var format = ".wav";
+  var soundPath = BASE_URL + "/sounds/";
+  var sounds = {};
+
+  function loadSoundChannel(name) {
+    var sound = $('<audio />').get(0);
+    sound.autobuffer = true;
+    sound.preload = 'auto';
+    sound.src = soundPath + name + format;
+
+    return sound;
+  }
+
+  function Sound(id, maxChannels) {
+    return {
+      play: function() {
+        Sound.play(id, maxChannels);
+      },
+
+      stop: function() {
+        Sound.stop(id);
+      }
+    }
+  }
+
+  return $.extend(Sound, {
+    play: function(id, maxChannels) {
+      // TODO: Too many channels crash Chrome!!!1
+      maxChannels = maxChannels || 4;
+
+      if(!sounds[id]) {
+        sounds[id] = [loadSoundChannel(id)];
+      }
+
+      var freeChannels = $.grep(sounds[id], function(sound) {
+        return sound.currentTime == sound.duration || sound.currentTime == 0
+      });
+
+      if(freeChannels[0]) {
+        try {
+          freeChannels[0].currentTime = 0;
+        } catch(e) {
+        }
+        freeChannels[0].play();
+      } else {
+        if(!maxChannels || sounds[id].length < maxChannels) {
+          var sound = loadSoundChannel(id);
+          sounds[id].push(sound);
+          sound.play();
+        }
+      }
+    },
+
+    playFromUrl: function(url) {
+      var sound = $('<audio />').get(0);
+      sound.src = url;
+
+      sound.play();
+
+      return sound;
+    },
+
+    stop: function(id) {
+      if(sounds[id]) {
+        sounds[id].stop();
+      }
+    }
+  });
+}(jQuery));
+;;
 var Text;
 Text = function(I) {
   $.reverseMerge(I, {
@@ -17886,56 +18160,6 @@ Wall = function(I) {
     solid: true
   });
   return GameObject(I);
-};;
-var Drawable;
-/**
-The Drawable module is used to provide a simple draw method to the including
-object.
-
-Binds a default draw listener to draw a rectangle or a sprite, if one exists.
-
-Binds a step listener to update the transform of the object.
-
-Autoloads the sprite specified in I.spriteName, if any.
-
-@name Drawable
-@module
-@constructor
-
-@param {Object} I Instance variables
-@param {Object} self Reference to including object
-*/
-Drawable = function(I, self) {
-  I || (I = {});
-  $.reverseMerge(I, {
-    color: "#196",
-    spriteName: null
-  });
-  if (I.spriteName) {
-    I.sprite = Sprite.loadByName(I.spriteName, function(sprite) {
-      I.width = sprite.width;
-      return (I.height = sprite.height);
-    });
-  } else if (I.spriteURL) {
-    I.sprite = Sprite.fromURL(I.spriteURL, function(sprite) {
-      I.width = sprite.width;
-      return (I.height = sprite.height);
-    });
-  }
-  self.bind('step', function() {
-    var center;
-    center = self.center();
-    return I.rotation ? (I.transform = Matrix.translation(center.x, center.y).concat(Matrix.rotation(I.rotation)).concat(Matrix.translation(-I.width / 2, -I.height / 2))) : (I.transform = Matrix.translation(I.x, I.y));
-  });
-  self.bind('draw', function(canvas) {
-    if (I.sprite) {
-      return I.sprite.draw(canvas, 0, 0);
-    } else {
-      canvas.fillColor(I.color);
-      return canvas.fillRect(0, 0, I.width, I.height);
-    }
-  });
-  return {};
 };;
 ;$(function(){ window.engine = Engine({
   canvas: $("canvas").powerCanvas(),
