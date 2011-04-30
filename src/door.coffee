@@ -8,9 +8,12 @@ Door = (I) ->
   self = GameObject(I)
 
   self.bind "step", ->
-    player = engine.find("Player").first()
+    if I.cat
+      player = engine.find("Cat").first()
+    else
+      player = engine.find("Player").first()
 
-    if Collision.rectangular(self.bounds(), player.collisionBounds())
+    if player && Collision.rectangular(self.bounds(), player.collisionBounds())
       engine.loadMap I.destination, ->
         # Pretty hacky...
         engine.add player.I
