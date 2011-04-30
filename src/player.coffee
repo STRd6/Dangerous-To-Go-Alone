@@ -6,6 +6,7 @@ Player = (I) ->
     y: 160
     state: {}
     speed: 4
+    items: {}
     excludedModules: ["Movable"]
 
   I.sprite = Sprite.loadByName("player")
@@ -29,6 +30,9 @@ Player = (I) ->
     pickup: (item) ->
       I.state.pickup = 45
       pickupItem = item
+
+      I.items[item.I.name] = true
+
       Sound.play "fanfare"
 
   walkCycle = 0
@@ -65,8 +69,8 @@ Player = (I) ->
         movement = movement.add(Point(0, 1))
         I.sprite = walkSprites.down.wrap((walkCycle/4).floor())
 
-      if keydown.space
-        target = facing.scale(32).add(self.center())
+      if I.items.kitten && keydown.space
+        target = facing.scale(32).add(self.center()).subtract(Point(8, 8))
 
         catBounds =
           x: target.x
