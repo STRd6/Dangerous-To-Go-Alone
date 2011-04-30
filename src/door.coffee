@@ -3,6 +3,8 @@ Door = (I) ->
     width: 32
     height: 32
 
+  I.sprite = Sprite.NONE unless I.keepSprite
+
   self = GameObject(I)
 
   self.bind "step", ->
