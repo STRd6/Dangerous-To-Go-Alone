@@ -13,7 +13,7 @@ Player = (I) ->
     up: [Sprite.loadByName("walk_up0"), Sprite.loadByName("walk_up1")]
     right: [Sprite.loadByName("walk_right0"), Sprite.loadByName("walk_right1")]
     down: [Sprite.loadByName("walk_down0"), Sprite.loadByName("walk_down1")]
-    left: [Sprite.loadByName("walk_letf0"), Sprite.loadByName("walk_left1")]
+    left: [Sprite.loadByName("walk_left0"), Sprite.loadByName("walk_left1")]
 
   pickupSprite = Sprite.loadByName("player_get")
 
