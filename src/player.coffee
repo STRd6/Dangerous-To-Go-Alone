@@ -7,10 +7,13 @@ Player = (I) ->
 
   self.bind "step", ->
     if keydown.left
-      I.x -= 1
-
+      I.x -= 2
     if keydown.right
-      I.x += 1
+      I.x += 2
+    if keydown.up
+      I.y -= 2
+    if keydown.down
+      I.y += 2
 
   self
 
