@@ -14,8 +14,8 @@ Player = (I) ->
     y: 2
 
   collisionBounds = (xOffset, yOffset) ->
-    x: I.x + (xOffset || 0) - collisionMargin.x
-    y: I.y + (yOffset || 0) - collisionMargin.y
+    x: I.x + (xOffset || 0) + collisionMargin.x
+    y: I.y + (yOffset || 0) + collisionMargin.y
     width: I.width - 2 * collisionMargin.x
     height: I.height - 2 * collisionMargin.y
 
