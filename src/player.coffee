@@ -5,3 +5,12 @@ Player = (I) ->
 
   self = GameObject(I)
 
+  self.bind "step", ->
+    if keydown.left
+      I.x -= 1
+
+    if keydown.right
+      I.x += 1
+
+  self
+
