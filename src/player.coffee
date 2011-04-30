@@ -6,15 +6,25 @@ Player = (I) ->
 
   self = GameObject(I)
 
+  walkCycle = 0
+
   self.bind "step", ->
+    movement = Point(0, 0)
+
     if keydown.left
-      I.x -= I.speed
+      movement = movement.add(Point(-1, 0))
     if keydown.right
-      I.x += I.speed
+      movement = movement.add(Point(1, 0))
     if keydown.up
-      I.y -= I.speed
+      movement = movement.add(Point(0, -1))
     if keydown.down
-      I.y += I.speed
+      movement = movement.add(Point(0, 1))
+
+    unless movement.equal(Point(0, 0))
+      walkCycle += 1
+      movement = movement.norm().scale(I.speed)
+      I.x += movement.x
+      I.y += movement.y
 
   self
 
