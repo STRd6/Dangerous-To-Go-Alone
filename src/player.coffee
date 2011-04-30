@@ -33,6 +33,8 @@ Player = (I) ->
 
   walkCycle = 0
 
+  facing = Point(0, 0)
+
   collisionMargin =
     x: 2
     y: 2
@@ -47,6 +49,8 @@ Player = (I) ->
     if I.state.pickup
       I.state.pickup -= 1
       I.sprite = pickupSprite
+    else if I.state.cat
+
     else
       if keydown.left
         movement = movement.add(Point(-1, 0))
@@ -61,13 +65,23 @@ Player = (I) ->
         movement = movement.add(Point(0, 1))
         I.sprite = walkSprites.down.wrap((walkCycle/4).floor())
 
+      if keydown.space
+        I.state.cat = true
+
+        target = facing.scale(32)
+
+        engine.add
+          class: "Cat"
+          x: I.x + 8 + target.x
+          y: I.y + 8 + target.y
+
     if movement.equal(Point(0, 0))
       I.velocity = movement
     else
       walkCycle += 1
 
-      movement = movement.norm().scale(I.speed)
-      I.velocity = movement
+      facing = movement.norm()
+      I.velocity = facing.scale(I.speed)
 
       I.velocity.x.abs().times ->
         if !engine.collides(self.collisionBounds(I.velocity.x.sign(), 0), self)
