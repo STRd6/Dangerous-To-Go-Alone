@@ -9,7 +9,12 @@ Player = (I) ->
     excludedModules: ["Movable"]
 
   I.sprite = Sprite.loadByName("player")
-  walkSprite = I.sprite
+  walkSprites =
+    up: [Sprite.loadByName("walk_up0"), Sprite.loadByName("walk_up1")]
+    right: [Sprite.loadByName("walk_right0"), Sprite.loadByName("walk_right1")]
+    down: [Sprite.loadByName("walk_down0"), Sprite.loadByName("walk_down1")]
+    left: [Sprite.loadByName("walk_letf0"), Sprite.loadByName("walk_left1")]
+
   pickupSprite = Sprite.loadByName("player_get")
 
   pickupItem = null
@@ -43,15 +48,18 @@ Player = (I) ->
       I.state.pickup -= 1
       I.sprite = pickupSprite
     else
-      I.sprite = walkSprite
       if keydown.left
         movement = movement.add(Point(-1, 0))
+        I.sprite = walkSprites.left.wrap((walkCycle/2).floor())
       if keydown.right
         movement = movement.add(Point(1, 0))
+        I.sprite = walkSprites.right.wrap((walkCycle/2).floor())
       if keydown.up
         movement = movement.add(Point(0, -1))
+        I.sprite = walkSprites.up.wrap((walkCycle/2).floor())
       if keydown.down
         movement = movement.add(Point(0, 1))
+        I.sprite = walkSprites.down.wrap((walkCycle/2).floor())
 
     if movement.equal(Point(0, 0))
       I.velocity = movement
