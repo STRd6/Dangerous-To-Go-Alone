@@ -45,9 +45,10 @@ Cat = (I) ->
     if I.age > 10 && keydown.space
       player = engine.find("Player").first()
 
-      I.active = false
-      player.I.state.cat = false
-      player.pickup self
+      if player && Collision.rectangular(self.bounds(), player.collisionBounds())
+        I.active = false
+        player.I.state.cat = false
+        player.pickup self
 
     if movement.equal(Point(0, 0))
       I.velocity = movement
