@@ -3,12 +3,7 @@ window.engine = Engine
   includedModules: "Tilemap"
 
 # Add a red square to the scene
-engine.loadMap "start"
-
-engine.add
-  x: 128
-  y: 128
-  sprite: Sprite.loadByName "cat"
+engine.loadMap "first_cave"
 
 engine.start()
 
