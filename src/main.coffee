@@ -5,10 +5,5 @@ window.engine = Engine
 # Add a red square to the scene
 engine.loadMap "start"
 
-engine.add
-  sprite: Sprite.loadByName("player")
-  x: 96
-  y: 96
-
 engine.start()
 
