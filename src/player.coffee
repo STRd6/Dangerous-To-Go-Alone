@@ -22,8 +22,9 @@ Player = (I) ->
       height: I.height - 2 * collisionMargin.y
 
     pickup: (item) ->
-      I.state.pickup = 15
+      I.state.pickup = 45
       pickupItem = item
+      Sound.play "fanfare"
 
   walkCycle = 0
 
@@ -33,7 +34,7 @@ Player = (I) ->
 
   self.bind "draw", (canvas) ->
     if I.state.pickup && pickupItem
-      pickupItem.draw(canvas, 8, -8)
+      pickupItem.I.sprite.draw(canvas, 8, -8)
 
   self.bind "step", ->
     movement = Point(0, 0)

@@ -9,7 +9,9 @@ Item = (I) ->
     player = engine.find("Player").first()
 
     if Collision.rectangular(self.bounds(), player.collisionBounds())
-      player.pickup(self)
+      if I.active
+        player.pickup(self)
+        I.active = false
 
   return self
 
