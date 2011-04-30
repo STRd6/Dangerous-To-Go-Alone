@@ -50,16 +50,16 @@ Player = (I) ->
     else
       if keydown.left
         movement = movement.add(Point(-1, 0))
-        I.sprite = walkSprites.left.wrap((walkCycle/2).floor())
+        I.sprite = walkSprites.left.wrap((walkCycle/4).floor())
       if keydown.right
         movement = movement.add(Point(1, 0))
-        I.sprite = walkSprites.right.wrap((walkCycle/2).floor())
+        I.sprite = walkSprites.right.wrap((walkCycle/4).floor())
       if keydown.up
         movement = movement.add(Point(0, -1))
-        I.sprite = walkSprites.up.wrap((walkCycle/2).floor())
+        I.sprite = walkSprites.up.wrap((walkCycle/4).floor())
       if keydown.down
         movement = movement.add(Point(0, 1))
-        I.sprite = walkSprites.down.wrap((walkCycle/2).floor())
+        I.sprite = walkSprites.down.wrap((walkCycle/4).floor())
 
     if movement.equal(Point(0, 0))
       I.velocity = movement
