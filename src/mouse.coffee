@@ -1,4 +1,4 @@
-Mouse = (I) ->
+MousePlayer = (I) ->
   $.reverseMerge I,
     name: "mouse"
     width: 12
