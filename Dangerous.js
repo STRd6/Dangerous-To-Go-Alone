@@ -18082,6 +18082,9 @@ Item = function(I) {
     if (!(player)) {
       return null;
     }
+    if (player.I.items[I.name]) {
+      I.active = false;
+    }
     if (Collision.rectangular(self.bounds(), player.collisionBounds())) {
       if (I.active) {
         player.pickup(self);
