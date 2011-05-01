@@ -10,6 +10,11 @@ Door = (I) ->
   self.bind "step", ->
     if I.cat
       player = engine.find("Cat").first()
+
+      # Cat can't exit if mouse is about
+      return if engine.find("MousePlayer").first()
+    else if I.mouse
+      player = engine.find("MousePlayer").first()
     else
       player = engine.find("Player").first()
 
