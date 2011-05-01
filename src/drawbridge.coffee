@@ -7,7 +7,7 @@ Drawbridge = (I) ->
   I.sprite = Sprite.NONE
 
   if leverTriggered "bridgeLever"
-    I.sprite = Sprite.loadByName("bridge")
+    I.sprite = Sprite.loadByName("wood_floor")
     I.solid = false
 
   GameObject(I)
