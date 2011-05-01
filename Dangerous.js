@@ -17653,7 +17653,7 @@ SpeechBox = function(I) {
 ;$(function(){ undefined });;
 var Cat;
 Cat = function(I) {
-  var collisionMargin, mewDown, self, walkCycle, walkSprites;
+  var carriedItem, collisionMargin, mewDown, self, walkCycle, walkSprites;
   $.reverseMerge(I, {
     width: 16,
     height: 16,
@@ -17666,6 +17666,7 @@ Cat = function(I) {
   };
   walkCycle = 0;
   mewDown = 0;
+  carriedItem = null;
   I.sprite = Sprite.loadByName("cat");
   walkSprites = {
     up: [Sprite.loadByName("cat_walk_up0"), Sprite.loadByName("cat_walk_up1")],
@@ -17684,7 +17685,7 @@ Cat = function(I) {
     }
   });
   self.bind("step", function() {
-    var movement, player;
+    var movement, pickupItem, player;
     mewDown = mewDown.approach(0, 1);
     movement = Point(0, 0);
     if (keydown.left) {
@@ -17705,10 +17706,16 @@ Cat = function(I) {
     }
     if (I.age > 10 && keydown.space) {
       player = engine.find("Player").first();
+      pickupItem = engine.find("Item").select(function(item) {
+        return Collision.rectangular(self.bounds(), item.bounds());
+      }).first();
       if (player && Collision.rectangular(self.bounds(), player.collisionBounds())) {
         I.active = false;
         player.I.state.cat = false;
         player.pickup(self);
+      } else if (pickupItem) {
+        carriedItem = pickupItem;
+        Sound.play("pickup");
       } else {
         if (!(mewDown)) {
           Sound.play("mew");
@@ -17725,9 +17732,13 @@ Cat = function(I) {
       I.velocity.x.abs().times(function() {
         return !engine.collides(self.collisionBounds(I.velocity.x.sign(), 0), self) ? I.x += I.velocity.x.sign() : (I.velocity.x = 0);
       });
-      return I.velocity.y.abs().times(function() {
+      I.velocity.y.abs().times(function() {
         return !engine.collides(self.collisionBounds(0, I.velocity.y.sign()), self) ? I.y += I.velocity.y.sign() : (I.velocity.y = 0);
       });
+      if (carriedItem) {
+        carriedItem.I.x = I.x;
+        return (carriedItem.I.y = I.y);
+      }
     }
   });
   return self;
@@ -17887,6 +17898,8 @@ Item = function(I) {
     width: 16,
     height: 16
   });
+  I.x += 8;
+  I.y += 8;
   self = GameObject(I);
   self.bind("step", function() {
     var player;
@@ -17936,7 +17949,9 @@ Player = function(I) {
     y: 160,
     state: {},
     speed: 4,
-    items: {},
+    items: {
+      kitten: true
+    },
     excludedModules: ["Movable"]
   });
   I.sprite = Sprite.loadByName("player");
@@ -18220,6 +18235,19 @@ Wall = function(I) {
     height: 32,
     solid: true
   });
+  if (I.invisible) {
+    I.sprite = Sprite.NONE;
+  }
+  return GameObject(I);
+};;
+var Drawbridge;
+Drawbridge = function(I) {
+  $.reverseMerge(I, {
+    width: 32,
+    height: 32,
+    solid: true
+  });
+  I.sprite = Sprite.NONE;
   return GameObject(I);
 };;
 ;$(function(){ var leversTriggered;
