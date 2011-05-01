@@ -52,6 +52,8 @@ Player = (I) ->
       pickupItem.I.sprite.draw(canvas, 8, -8)
 
   self.bind "step", ->
+    bombCooldown = bombCooldown.approach(0, 1)
+
     movement = Point(0, 0)
 
     if I.state.pickup
