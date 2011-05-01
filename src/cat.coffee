@@ -8,6 +8,9 @@ Cat = (I) ->
     items: {}
     state: {}
 
+  if window.hasMouse
+    I.items.mouse = true
+
   collisionMargin =
     x: 1
     y: 1
