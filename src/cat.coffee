@@ -11,6 +11,7 @@ Cat = (I) ->
 
   walkCycle = 0
   mewDown = 0
+  carriedItem = null
 
   I.sprite = Sprite.loadByName("cat")
 
@@ -48,10 +49,17 @@ Cat = (I) ->
     if I.age > 10 && keydown.space
       player = engine.find("Player").first()
 
+      pickupItem = engine.find("Item").select (item) ->
+        Collision.rectangular(self.bounds(), item.bounds())
+      .first()
+
       if player && Collision.rectangular(self.bounds(), player.collisionBounds())
         I.active = false
         player.I.state.cat = false
         player.pickup self
+      else if pickupItem
+        carriedItem = pickupItem
+        Sound.play "pickup"
       else
         unless mewDown
           Sound.play "mew"
@@ -76,6 +84,10 @@ Cat = (I) ->
           I.y += I.velocity.y.sign()
         else 
           I.velocity.y = 0
+
+      if carriedItem
+        carriedItem.I.x = I.x
+        carriedItem.I.y = I.y
 
   self
 
