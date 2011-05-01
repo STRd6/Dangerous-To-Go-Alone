@@ -6,7 +6,9 @@ Player = (I) ->
     y: 160
     state: {}
     speed: 4
-    items: {}
+    items: {
+      kitten: true
+    }
     excludedModules: ["Movable"]
 
   I.sprite = Sprite.loadByName("player")
