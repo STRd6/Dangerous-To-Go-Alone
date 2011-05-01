@@ -4,9 +4,10 @@ BombDoor = (I) ->
     height: 32
     solid: true
 
-  self = GameObject(I)
-
-  #TODO: Bomb change state
+  self = GameObject(I).extend
+    open: ->
+      I.solid = false
+      Sound.play "secret"
 
   self.bind "step", ->
 
