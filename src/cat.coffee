@@ -8,6 +8,7 @@ Cat = (I) ->
     items: {}
     state: {}
 
+  # HACK
   if window.hasMouse
     I.items.mouse = true
 
@@ -44,6 +45,7 @@ Cat = (I) ->
 
       I.items[item.I.name] = true
 
+      # HACK
       window.hasMouse = true
 
       Sound.play "fanfare"
