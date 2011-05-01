@@ -6,8 +6,8 @@ Lava = (I) ->
 
   self = GameObject(I).extend
     draw: (canvas) ->
-      offsetX = (-I.age/5).floor().mod(I.width)
-      offsetY = (-I.age/8).floor().mod(I.height)
+      offsetX = (-I.age/7).floor().mod(I.width)
+      offsetY = (-I.age/16).floor().mod(I.height)
       source = Lava.fillSource.element()
       canvas.drawImage source, offsetX, offsetY, I.width, I.height, I.x, I.y, I.width, I.height
 
