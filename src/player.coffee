@@ -83,6 +83,7 @@ Player = (I) ->
 
           engine.add
             class: "Cat"
+            playerData: I
             x: target.x
             y: target.y
 
