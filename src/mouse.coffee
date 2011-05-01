@@ -32,6 +32,7 @@ MousePlayer = (I) ->
         I.active = false
         cat.I.state.mouse = false
         cat.pickup self
+        cat.I.mouseCooldown = 30
       else
         unless cooldown
           Sound.play "squeak"
