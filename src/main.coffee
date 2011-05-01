@@ -6,6 +6,7 @@ window.engine = Engine
 engine.loadMap "start", ->
   engine.add
     class: "Player"
+    location: "start"
 
 engine.start()
 
