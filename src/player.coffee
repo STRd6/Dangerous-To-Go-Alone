@@ -96,6 +96,7 @@ Player = (I) ->
 
         unless engine.collides catBounds
           I.state.cat = true
+          I.items.kitten = false
 
           engine.add
             class: "Cat"
