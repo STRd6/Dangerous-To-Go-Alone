@@ -1,4 +1,4 @@
-Wall = (I) ->
+Bomb = (I) ->
   $.reverseMerge I,
     width: 16
     height: 16
