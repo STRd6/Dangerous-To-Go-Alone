@@ -1,5 +1,6 @@
 Cat = (I) ->
   $.reverseMerge I,
+    name: "kitten"
     width: 16
     height: 16
     speed: 2
