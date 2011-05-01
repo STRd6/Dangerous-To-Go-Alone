@@ -89,7 +89,9 @@ Cat = (I) ->
     else
       walkCycle += 1
 
-      movement = movement.norm().scale(I.speed)
+      unless inWater
+        movement = movement.norm().scale(I.speed)
+
       I.velocity = movement
 
       I.velocity.x.abs().times ->
