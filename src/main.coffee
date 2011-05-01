@@ -20,4 +20,5 @@ window.leverTriggered = (name) ->
 parent.gameControlData =
   Movement: "Arrow Keys"
   "Deploy/Return Cat": "Spacebar"
+  "Place Bomb": "Enter"
 
