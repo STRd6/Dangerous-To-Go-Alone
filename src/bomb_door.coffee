@@ -4,9 +4,12 @@ BombDoor = (I) ->
     height: 32
     solid: true
 
+  openSprite = Sprite.loadByName("cave_small")
+
   self = GameObject(I).extend
     open: ->
       I.solid = false
+      I.sprite = openSprite
       Sound.play "secret"
 
   self.bind "step", ->
