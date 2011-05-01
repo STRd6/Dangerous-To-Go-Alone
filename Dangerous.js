@@ -17726,22 +17726,32 @@ BombDoor = function(I) {
 };;
 var Cat;
 Cat = function(I) {
-  var carriedItem, collisionMargin, mewDown, self, walkCycle, walkSprites;
+  var carriedItem, collisionMargin, facing, mewDown, pickupCooldown, pickupItem, pickupSprite, self, walkCycle, walkSprites;
   $.reverseMerge(I, {
     name: "kitten",
     width: 16,
     height: 16,
     speed: 2,
-    excludedModules: ["Movable"]
+    excludedModules: ["Movable"],
+    items: {},
+    state: {}
   });
+  if (window.hasMouse) {
+    I.items.mouse = true;
+  }
   collisionMargin = {
     x: 1,
     y: 1
   };
+  facing = Point(0, 0);
   walkCycle = 0;
   mewDown = 0;
   carriedItem = null;
+  pickupItem = null;
+  pickupCooldown = 0;
+  pickupSprite = Sprite.loadByName("cat_get");
   I.sprite = Sprite.loadByName("cat");
+  I.mouseCooldown = 0;
   walkSprites = {
     up: [Sprite.loadByName("cat_walk_up0"), Sprite.loadByName("cat_walk_up1")],
     right: [Sprite.loadByName("cat_walk_right0"), Sprite.loadByName("cat_walk_right1")],
@@ -17756,14 +17766,29 @@ Cat = function(I) {
         width: I.width - 2 * collisionMargin.x,
         height: I.height - 2 * collisionMargin.y
       };
+    },
+    pickup: function(item) {
+      pickupCooldown = 45;
+      pickupItem = item;
+      I.items[item.I.name] = true;
+      window.hasMouse = true;
+      return Sound.play("fanfare");
     }
   });
+  self.bind("draw", function(canvas) {
+    return pickupCooldown && pickupItem ? pickupItem.I.sprite.draw(canvas, 6, -6) : null;
+  });
   self.bind("step", function() {
-    var inStream, movement, pickupItem, player;
+    var inStream, mouseBounds, movement, player, target;
     mewDown = mewDown.approach(0, 1);
+    pickupCooldown = pickupCooldown.approach(0, 1);
+    I.mouseCooldown = I.mouseCooldown.approach(0, 1);
+    if (I.state.mouse) {
+      return null;
+    }
     movement = Point(0, 0);
     inStream = false;
-    if (I.age > 10 && keydown.space) {
+    if (I.age > 10 && keydown.space && !I.mouseCooldown) {
       player = engine.find("Player").first();
       pickupItem = engine.find("Item").select(function(item) {
         return Collision.rectangular(self.bounds(), item.bounds());
@@ -17777,6 +17802,23 @@ Cat = function(I) {
         carriedItem.I.x = I.x;
         carriedItem.I.y = I.y;
         Sound.play("pickup");
+      } else if (I.items.mouse) {
+        target = facing.scale(32).add(self.center()).subtract(Point(12, 12));
+        mouseBounds = {
+          x: target.x,
+          y: target.y,
+          width: 12,
+          height: 12
+        };
+        if (!(engine.collides(mouseBounds))) {
+          I.state.mouse = true;
+          I.items.mouse = false;
+          engine.add({
+            "class": "MousePlayer",
+            x: target.x,
+            y: target.y
+          });
+        }
       } else {
         if (!(mewDown)) {
           Sound.play("mew");
@@ -17803,6 +17845,8 @@ Cat = function(I) {
       if (player = engine.find("Player").first()) {
         player.I.state.cat = false;
       }
+    } else if (pickupCooldown) {
+      I.sprite = pickupSprite;
     } else {
       if (keydown.left) {
         movement = movement.add(Point(-1, 0));
@@ -17860,6 +17904,11 @@ Door = function(I) {
     var player;
     if (I.cat) {
       player = engine.find("Cat").first();
+      if (engine.find("MousePlayer").first()) {
+        return null;
+      }
+    } else if (I.mouse) {
+      player = engine.find("MousePlayer").first();
     } else {
       player = engine.find("Player").first();
       if (engine.find("Cat").first()) {
@@ -18019,10 +18068,20 @@ Item = function(I) {
   });
   I.x += 8;
   I.y += 8;
+  if (I.cat) {
+    I.x += 2;
+  }
   self = GameObject(I);
   self.bind("step", function() {
     var player;
-    player = engine.find("Player").first();
+    if (I.cat) {
+      player = engine.find("Cat").first();
+    } else {
+      player = engine.find("Player").first();
+    }
+    if (!(player)) {
+      return null;
+    }
     if (Collision.rectangular(self.bounds(), player.collisionBounds())) {
       if (I.active) {
         player.pickup(self);
@@ -18080,6 +18139,79 @@ Lever = function(I) {
         return Sound.play("trigger");
       }
     }
+  });
+  return self;
+};;
+var MousePlayer;
+MousePlayer = function(I) {
+  var collisionMargin, cooldown, self;
+  $.reverseMerge(I, {
+    name: "mouse",
+    width: 12,
+    height: 12,
+    speed: 1,
+    excludedModules: ["Movable"]
+  });
+  cooldown = 0;
+  collisionMargin = {
+    x: 2,
+    y: 1
+  };
+  I.sprite = Sprite.loadByName("mouse");
+  self = GameObject(I).extend({
+    collisionBounds: function(xOffset, yOffset) {
+      return {
+        x: I.x + (xOffset || 0) + collisionMargin.x,
+        y: I.y + (yOffset || 0) + collisionMargin.y,
+        width: I.width - 2 * collisionMargin.x,
+        height: I.height - 2 * collisionMargin.y
+      };
+    }
+  });
+  self.bind("step", function() {
+    var cat, movement;
+    movement = Point(0, 0);
+    cooldown = cooldown.approach(0, 1);
+    if (I.age > 10 && keydown.space) {
+      cat = engine.find("Cat").first();
+      if (cat && Collision.rectangular(self.bounds(), cat.bounds())) {
+        I.active = false;
+        cat.I.state.mouse = false;
+        cat.pickup(self);
+        cat.I.mouseCooldown = 30;
+      } else {
+        if (!(cooldown)) {
+          Sound.play("squeak");
+          cooldown += 30;
+        }
+      }
+    }
+    if (keydown.left) {
+      movement = movement.add(Point(-1, 0));
+    }
+    if (keydown.right) {
+      movement = movement.add(Point(1, 0));
+    }
+    if (keydown.up) {
+      movement = movement.add(Point(0, -1));
+    }
+    if (keydown.down) {
+      movement = movement.add(Point(0, 1));
+    }
+    if (movement.equal(Point(0, 0))) {
+      I.velocity = movement;
+    } else {
+      movement = movement.norm().scale(I.speed);
+      I.velocity = movement;
+      I.velocity.x.abs().times(function() {
+        return !engine.collides(self.collisionBounds(I.velocity.x.sign(), 0), self) ? I.x += I.velocity.x.sign() : (I.velocity.x = 0);
+      });
+      I.velocity.y.abs().times(function() {
+        return !engine.collides(self.collisionBounds(0, I.velocity.y.sign()), self) ? I.y += I.velocity.y.sign() : (I.velocity.y = 0);
+      });
+    }
+    I.x = I.x.clamp(0, 480 - I.width);
+    return (I.y = I.y.clamp(0, 320 - I.height));
   });
   return self;
 };;
@@ -18441,5 +18573,6 @@ window.leverTriggered = function(name) {
 };
 parent.gameControlData = {
   Movement: "Arrow Keys",
-  "Deploy/Return Cat": "Spacebar"
+  "Deploy/Return Cat": "Spacebar",
+  "Place Bomb": "Enter"
 }; });
