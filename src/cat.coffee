@@ -16,6 +16,7 @@ Cat = (I) ->
   mewDown = 0
   carriedItem = null
   pickupItem = null
+  pickupCooldown = 0
 
   pickupSprite = Sprite.loadByName("cat_get")
   I.sprite = Sprite.loadByName("cat")
