@@ -72,7 +72,7 @@ Player = (I) ->
         movement = movement.add(Point(0, 1))
         I.sprite = walkSprites.down.wrap((walkCycle/4).floor())
 
-      if I.item.bomb && keydown.return && !bombCooldown
+      if I.items.bomb && keydown.return && !bombCooldown
         bombCooldown += 90
 
         target = facing.scale(32).add(self.center()).subtract(Point(8, 8))
