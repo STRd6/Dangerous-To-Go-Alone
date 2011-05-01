@@ -5,6 +5,8 @@ Cat = (I) ->
     height: 16
     speed: 2
     excludedModules: ["Movable"]
+    items: {}
+    state: {}
 
   collisionMargin =
     x: 1
@@ -13,7 +15,9 @@ Cat = (I) ->
   walkCycle = 0
   mewDown = 0
   carriedItem = null
+  pickupItem = null
 
+  pickupSprite = Sprite.loadByName("cat_get")
   I.sprite = Sprite.loadByName("cat")
 
   walkSprites =
@@ -28,9 +32,17 @@ Cat = (I) ->
       y: I.y + (yOffset || 0) + collisionMargin.y
       width: I.width - 2 * collisionMargin.x
       height: I.height - 2 * collisionMargin.y
+    pickup: (item) ->
+      pickupCooldown = 45
+      pickupItem = item
+
+      I.items[item.I.name] = true
+
+      Sound.play "fanfare"
 
   self.bind "step", ->
     mewDown = mewDown.approach(0, 1)
+    pickupCooldown = pickupCooldown.approach(0, 1)
 
     movement = Point(0, 0)
     inStream = false
@@ -69,6 +81,10 @@ Cat = (I) ->
 
       if player = engine.find("Player").first()
         player.I.state.cat = false
+
+    else if pickupCooldown
+      I.sprite = pickupSprite
+    else if I.state.mouse
 
     else
       if keydown.left
