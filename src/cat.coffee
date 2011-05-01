@@ -12,6 +12,7 @@ Cat = (I) ->
     x: 1
     y: 1
 
+  facing = Point(0, 0)
   walkCycle = 0
   mewDown = 0
   carriedItem = null
@@ -66,6 +67,23 @@ Cat = (I) ->
         carriedItem.I.x = I.x
         carriedItem.I.y = I.y
         Sound.play "pickup"
+      else if I.items.mouse
+        target = facing.scale(32).add(self.center()).subtract(Point(8, 8))
+
+        mouseBounds =
+          x: target.x
+          y: target.y
+          width: 12
+          height: 12
+
+        unless engine.collides mouseBounds
+          I.state.mouse = true
+          I.items.mouse = false
+
+          engine.add
+            class: "MousePlayer"
+            x: target.x
+            y: target.y
       else
         unless mewDown
           Sound.play "mew"
