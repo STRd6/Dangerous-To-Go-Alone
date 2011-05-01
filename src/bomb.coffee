@@ -8,6 +8,9 @@ Bomb = (I) ->
   self = GameObject(I)
 
   self.bind "step", ->
+    if I.age == 55
+      Sound.play "explosion"
+
     if I.age >= 60
       self.destroy()
 
