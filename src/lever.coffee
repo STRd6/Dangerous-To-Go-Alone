@@ -4,6 +4,9 @@ Lever = (I) ->
     height: 32
     triggered: false
 
+  if leverTriggered I.id
+    I.sprite = Sprite.loadByName("lever_triggered")    
+
   self = GameObject(I)
 
   self.bind "step", ->
