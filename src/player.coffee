@@ -37,6 +37,13 @@ Player = (I) ->
 
       I.items[item.I.name] = true
 
+      if item.I.message
+        engine.add
+          class: "Text"
+          duration: 150
+          message: item.I.message
+          y: 32
+
       Sound.play "fanfare"
 
   walkCycle = 0
