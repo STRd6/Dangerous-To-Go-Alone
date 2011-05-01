@@ -7,7 +7,7 @@ Player = (I) ->
     state: {}
     speed: 4
     items: {
-      #kitten: true
+      kitten: true
       #bomb: true
     }
     excludedModules: ["Movable"]
