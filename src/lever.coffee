@@ -13,8 +13,9 @@ Lever = (I) ->
 
       if player && Collision.rectangular(self.bounds(), player.collisionBounds())
         I.triggered = true
+        triggerLever I.id
         I.sprite = Sprite.loadByName("lever_triggered")
         Sound.play "trigger"
 
-
   return self
+
