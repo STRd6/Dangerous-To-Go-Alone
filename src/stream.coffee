@@ -14,3 +14,4 @@ Stream = (I) ->
     I.sprite = Stream.sprites.wrap (I.age / 4).floor()
 
   self
+
