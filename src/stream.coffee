@@ -3,15 +3,17 @@ Stream = (I) ->
     width: 32
     height: 32
 
-  self = GameObject(I)
+  self = GameObject(I).extend
+    draw: (canvas) ->
+      offset = I.age % 32
+      source = Stream.fillSource.element()
+      canvas.drawImage source, I.x, I.y, I.width, I.height, 0, offset, I.width, I.height
 
-  Stream.sprites ||= [
-    Sprite.loadByName "water"
-    Sprite.loadByName "water1"
-  ]
+  unless Stream.fillSource
+    Stream.fillSource = $("<canvas width='128' height='128'></canvas>").powerCanvas()
 
-  self.bind "step", ->
-    I.sprite = Stream.sprites.wrap (I.age / 4).floor()
+    Sprite.loadByName "water0", (waterSprite) ->
+      waterSprite.fill(Stream.fillSource, 0, 0, 128, 128)
 
   self
 
