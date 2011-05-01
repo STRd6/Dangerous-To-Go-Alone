@@ -10,6 +10,7 @@ Cat = (I) ->
     y: 1
 
   walkCycle = 0
+  mewDown = 0
 
   I.sprite = Sprite.loadByName("cat")
 
@@ -27,6 +28,8 @@ Cat = (I) ->
       height: I.height - 2 * collisionMargin.y
 
   self.bind "step", ->
+    mewDown = mewDown.approach(0, 1)
+
     movement = Point(0, 0)
 
     if keydown.left
@@ -49,6 +52,10 @@ Cat = (I) ->
         I.active = false
         player.I.state.cat = false
         player.pickup self
+      else
+        unless mewDown
+          Sound.play "mew"
+          mewDown += 60
 
     if movement.equal(Point(0, 0))
       I.velocity = movement
