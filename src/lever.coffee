@@ -11,8 +11,7 @@ Lever = (I) ->
 
   self.bind "step", ->
     unless I.triggered
-      if I.cat
-        player = engine.find("Cat").first()
+      player = engine.find("Cat").first()
 
       if player && Collision.rectangular(self.bounds(), player.collisionBounds())
         I.triggered = true
