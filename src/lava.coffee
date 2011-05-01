@@ -14,8 +14,8 @@ Lava = (I) ->
   unless Lava.fillSource
     Lava.fillSource = $("<canvas width='128' height='128'></canvas>").powerCanvas()
 
-    Lava.loadByName "lava", (waterSprite) ->
-      waterSprite.fill(Stream.fillSource, 0, 0, 128, 128)
+    Sprite.loadByName "lava", (lavaSprite) ->
+      lavaSprite.fill(Lava.fillSource, 0, 0, 128, 128)
 
   self
 
