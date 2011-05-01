@@ -18,6 +18,8 @@ Item = (I) ->
 
     return unless player
 
+    I.active = false if player.I.items[I.name]
+
     if Collision.rectangular(self.bounds(), player.collisionBounds())
       if I.active
         player.pickup(self)
