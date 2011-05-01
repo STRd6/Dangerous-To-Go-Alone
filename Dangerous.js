@@ -17651,10 +17651,84 @@ SpeechBox = function(I) {
   });
 })();;
 ;$(function(){ undefined });;
+var Bomb;
+Bomb = function(I) {
+  var self;
+  $.reverseMerge(I, {
+    width: 16,
+    height: 16
+  });
+  I.sprite = Sprite.loadByName("bomb");
+  self = GameObject(I);
+  self.bind("step", function() {
+    if (I.age === 55) {
+      Sound.play("explosion");
+    }
+    return I.age >= 60 ? self.destroy() : null;
+  });
+  self.bind("destroy", function() {
+    return engine.find("BombDoor").select(function(door) {
+      return Collision.rectangular(self.bounds(), door.bounds());
+    }).each(function(door) {
+      return door.open();
+    });
+  });
+  return self;
+};;
+var BombDoor;
+BombDoor = function(I) {
+  var openSprite, self;
+  $.reverseMerge(I, {
+    width: 32,
+    height: 32,
+    solid: true
+  });
+  openSprite = Sprite.loadByName("cave_small");
+  self = GameObject(I).extend({
+    open: function() {
+      I.solid = false;
+      I.sprite = openSprite;
+      return Sound.play("secret");
+    }
+  });
+  self.bind("step", function() {
+    var player;
+    if (I.cat) {
+      player = engine.find("Cat").first();
+    } else {
+      player = engine.find("Player").first();
+    }
+    if (player && Collision.rectangular(self.bounds(), player.collisionBounds())) {
+      engine.loadMap(I.destination, function() {
+        player.I.location = I.destination;
+        engine.add(player.I);
+        return I.cat && player.I.playerData.location === I.destination ? engine.add(player.I.playerData) : null;
+      });
+      if (I.autoPosition) {
+        if (I.x === 0) {
+          player.I.x = 416;
+        } else if (I.x === 448) {
+          player.I.x = 32;
+        }
+        if (I.y === 0) {
+          player.I.y = 256;
+        } else if (I.y === 288) {
+          player.I.y = 32;
+        }
+      }
+      if (I.destinationPosition) {
+        player.I.x = I.destinationPosition.x;
+        return (player.I.y = I.destinationPosition.y);
+      }
+    }
+  });
+  return self;
+};;
 var Cat;
 Cat = function(I) {
   var carriedItem, collisionMargin, mewDown, self, walkCycle, walkSprites;
   $.reverseMerge(I, {
+    name: "kitten",
     width: 16,
     height: 16,
     speed: 2,
@@ -17685,25 +17759,10 @@ Cat = function(I) {
     }
   });
   self.bind("step", function() {
-    var movement, pickupItem, player;
+    var inStream, movement, pickupItem, player;
     mewDown = mewDown.approach(0, 1);
     movement = Point(0, 0);
-    if (keydown.left) {
-      movement = movement.add(Point(-1, 0));
-      I.sprite = walkSprites.left.wrap((walkCycle / 4).floor());
-    }
-    if (keydown.right) {
-      movement = movement.add(Point(1, 0));
-      I.sprite = walkSprites.right.wrap((walkCycle / 4).floor());
-    }
-    if (keydown.up) {
-      movement = movement.add(Point(0, -1));
-      I.sprite = walkSprites.up.wrap((walkCycle / 4).floor());
-    }
-    if (keydown.down) {
-      movement = movement.add(Point(0, 1));
-      I.sprite = walkSprites.down.wrap((walkCycle / 4).floor());
-    }
+    inStream = false;
     if (I.age > 10 && keydown.space) {
       player = engine.find("Player").first();
       pickupItem = engine.find("Item").select(function(item) {
@@ -17715,6 +17774,8 @@ Cat = function(I) {
         player.pickup(self);
       } else if (pickupItem) {
         carriedItem = pickupItem;
+        carriedItem.I.x = I.x;
+        carriedItem.I.y = I.y;
         Sound.play("pickup");
       } else {
         if (!(mewDown)) {
@@ -17723,11 +17784,50 @@ Cat = function(I) {
         }
       }
     }
+    engine.find("Stream").select(function(tile) {
+      return Collision.rectangular({
+        x: I.x + 8,
+        y: I.y + 8,
+        width: 1,
+        height: 1
+      }, tile.bounds());
+    }).each(function(stream) {
+      inStream = true;
+      return (movement = movement.add(stream.I.flow));
+    });
+    if (inStream) {
+      if (!(mewDown)) {
+        Sound.play("mew");
+        mewDown += 30;
+      }
+      if (player = engine.find("Player").first()) {
+        player.I.state.cat = false;
+      }
+    } else {
+      if (keydown.left) {
+        movement = movement.add(Point(-1, 0));
+        I.sprite = walkSprites.left.wrap((walkCycle / 4).floor());
+      }
+      if (keydown.right) {
+        movement = movement.add(Point(1, 0));
+        I.sprite = walkSprites.right.wrap((walkCycle / 4).floor());
+      }
+      if (keydown.up) {
+        movement = movement.add(Point(0, -1));
+        I.sprite = walkSprites.up.wrap((walkCycle / 4).floor());
+      }
+      if (keydown.down) {
+        movement = movement.add(Point(0, 1));
+        I.sprite = walkSprites.down.wrap((walkCycle / 4).floor());
+      }
+    }
     if (movement.equal(Point(0, 0))) {
-      return (I.velocity = movement);
+      I.velocity = movement;
     } else {
       walkCycle += 1;
-      movement = movement.norm().scale(I.speed);
+      if (!(inStream)) {
+        movement = movement.norm().scale(I.speed);
+      }
       I.velocity = movement;
       I.velocity.x.abs().times(function() {
         return !engine.collides(self.collisionBounds(I.velocity.x.sign(), 0), self) ? I.x += I.velocity.x.sign() : (I.velocity.x = 0);
@@ -17737,9 +17837,11 @@ Cat = function(I) {
       });
       if (carriedItem) {
         carriedItem.I.x = I.x;
-        return (carriedItem.I.y = I.y);
+        carriedItem.I.y = I.y;
       }
     }
+    I.x = I.x.clamp(0, 480 - I.width);
+    return (I.y = I.y.clamp(0, 320 - I.height));
   });
   return self;
 };;
@@ -17760,6 +17862,9 @@ Door = function(I) {
       player = engine.find("Cat").first();
     } else {
       player = engine.find("Player").first();
+      if (engine.find("Cat").first()) {
+        return null;
+      }
     }
     if (player && Collision.rectangular(self.bounds(), player.collisionBounds())) {
       engine.loadMap(I.destination, function() {
@@ -17837,6 +17942,20 @@ Drawable = function(I, self) {
   });
   return {};
 };;
+var Drawbridge;
+Drawbridge = function(I) {
+  $.reverseMerge(I, {
+    width: 32,
+    height: 32,
+    solid: true
+  });
+  I.sprite = Sprite.NONE;
+  if (leverTriggered("bridgeLever")) {
+    I.sprite = Sprite.loadByName("wood_floor");
+    I.solid = false;
+  }
+  return GameObject(I);
+};;
 /***
 The <code>Tilemap</code> module provides a way to load tilemaps in the engine.
 
@@ -17913,6 +18032,31 @@ Item = function(I) {
   });
   return self;
 };;
+var Lava;
+Lava = function(I) {
+  var self;
+  $.reverseMerge(I, {
+    width: 32,
+    height: 32,
+    solid: true
+  });
+  self = GameObject(I).extend({
+    draw: function(canvas) {
+      var offsetX, offsetY, source;
+      offsetX = (-I.age / 7).floor().mod(I.width);
+      offsetY = (-I.age / 16).floor().mod(I.height);
+      source = Lava.fillSource.element();
+      return canvas.drawImage(source, offsetX, offsetY, I.width, I.height, I.x, I.y, I.width, I.height);
+    }
+  });
+  if (!(Lava.fillSource)) {
+    Lava.fillSource = $("<canvas width='128' height='128'></canvas>").powerCanvas();
+    Sprite.loadByName("lava", function(lavaSprite) {
+      return lavaSprite.fill(Lava.fillSource, 0, 0, 128, 128);
+    });
+  }
+  return self;
+};;
 var Lever;
 Lever = function(I) {
   var self;
@@ -17941,7 +18085,7 @@ Lever = function(I) {
 };;
 var Player;
 Player = function(I) {
-  var collisionMargin, facing, pickupItem, pickupSprite, self, walkCycle, walkSprites;
+  var bombCooldown, collisionMargin, facing, pickupItem, pickupSprite, self, walkCycle, walkSprites;
   $.reverseMerge(I, {
     width: 32,
     height: 32,
@@ -17949,9 +18093,7 @@ Player = function(I) {
     y: 160,
     state: {},
     speed: 4,
-    items: {
-      kitten: true
-    },
+    items: {},
     excludedModules: ["Movable"]
   });
   I.sprite = Sprite.loadByName("player");
@@ -17962,6 +18104,7 @@ Player = function(I) {
     left: [Sprite.loadByName("walk_left0"), Sprite.loadByName("walk_left1")]
   };
   pickupSprite = Sprite.loadByName("player_get");
+  bombCooldown = 0;
   pickupItem = null;
   self = GameObject(I).extend({
     collisionBounds: function(xOffset, yOffset) {
@@ -17990,6 +18133,7 @@ Player = function(I) {
   });
   self.bind("step", function() {
     var catBounds, movement, target;
+    bombCooldown = bombCooldown.approach(0, 1);
     movement = Point(0, 0);
     if (I.state.pickup) {
       I.state.pickup -= 1;
@@ -18013,6 +18157,15 @@ Player = function(I) {
         movement = movement.add(Point(0, 1));
         I.sprite = walkSprites.down.wrap((walkCycle / 4).floor());
       }
+      if (I.items.bomb && keydown["return"] && !bombCooldown) {
+        bombCooldown += 90;
+        target = facing.scale(32).add(self.center()).subtract(Point(8, 8));
+        engine.add({
+          "class": "Bomb",
+          x: target.x,
+          y: target.y
+        });
+      }
       if (I.items.kitten && keydown.space) {
         target = facing.scale(32).add(self.center()).subtract(Point(8, 8));
         catBounds = {
@@ -18023,6 +18176,7 @@ Player = function(I) {
         };
         if (!(engine.collides(catBounds))) {
           I.state.cat = true;
+          I.items.kitten = false;
           engine.add({
             "class": "Cat",
             playerData: I,
@@ -18033,7 +18187,7 @@ Player = function(I) {
       }
     }
     if (movement.equal(Point(0, 0))) {
-      return (I.velocity = movement);
+      I.velocity = movement;
     } else {
       walkCycle += 1;
       facing = movement.norm();
@@ -18041,10 +18195,12 @@ Player = function(I) {
       I.velocity.x.abs().times(function() {
         return !engine.collides(self.collisionBounds(I.velocity.x.sign(), 0), self) ? I.x += I.velocity.x.sign() : (I.velocity.x = 0);
       });
-      return I.velocity.y.abs().times(function() {
+      I.velocity.y.abs().times(function() {
         return !engine.collides(self.collisionBounds(0, I.velocity.y.sign()), self) ? I.y += I.velocity.y.sign() : (I.velocity.y = 0);
       });
     }
+    I.x = I.x.clamp(0, 480 - I.width);
+    return (I.y = I.y.clamp(0, 320 - I.height));
   });
   return self;
 };;
@@ -18124,6 +18280,30 @@ var Sound = (function($) {
   });
 }(jQuery));
 ;;
+var Stream;
+Stream = function(I) {
+  var self;
+  $.reverseMerge(I, {
+    width: 32,
+    height: 32
+  });
+  self = GameObject(I).extend({
+    draw: function(canvas) {
+      var offsetX, offsetY, source;
+      offsetY = (-I.flow.y * I.age).floor().mod(32);
+      offsetX = (-I.flow.x * I.age).floor().mod(32);
+      source = Stream.fillSource.element();
+      return canvas.drawImage(source, offsetX, offsetY, I.width, I.height, I.x, I.y, I.width, I.height);
+    }
+  });
+  if (!(Stream.fillSource)) {
+    Stream.fillSource = $("<canvas width='128' height='128'></canvas>").powerCanvas();
+    Sprite.loadByName("water0", function(waterSprite) {
+      return waterSprite.fill(Stream.fillSource, 0, 0, 128, 128);
+    });
+  }
+  return self;
+};;
 var Text;
 Text = function(I) {
   $.reverseMerge(I, {
@@ -18238,16 +18418,6 @@ Wall = function(I) {
   if (I.invisible) {
     I.sprite = Sprite.NONE;
   }
-  return GameObject(I);
-};;
-var Drawbridge;
-Drawbridge = function(I) {
-  $.reverseMerge(I, {
-    width: 32,
-    height: 32,
-    solid: true
-  });
-  I.sprite = Sprite.NONE;
   return GameObject(I);
 };;
 ;$(function(){ var leversTriggered;
