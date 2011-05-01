@@ -5,8 +5,8 @@ Stream = (I) ->
 
   self = GameObject(I).extend
     draw: (canvas) ->
-      offsetY = (-I.flow.y * I.age/2).floor().mod(32)
-      offsetX = (-I.flow.x * I.age/2).floor().mod(32)
+      offsetY = (-I.flow.y * I.age).floor().mod(32)
+      offsetX = (-I.flow.x * I.age).floor().mod(32)
       source = Stream.fillSource.element()
       canvas.drawImage source, offsetX, offsetY, I.width, I.height, I.x, I.y, I.width, I.height
 
