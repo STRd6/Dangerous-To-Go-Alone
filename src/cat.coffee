@@ -21,6 +21,7 @@ Cat = (I) ->
 
   pickupSprite = Sprite.loadByName("cat_get")
   I.sprite = Sprite.loadByName("cat")
+  I.mouseCooldown = 0
 
   walkSprites =
     up: [Sprite.loadByName("cat_walk_up0"), Sprite.loadByName("cat_walk_up1")]
@@ -49,13 +50,14 @@ Cat = (I) ->
   self.bind "step", ->
     mewDown = mewDown.approach(0, 1)
     pickupCooldown = pickupCooldown.approach(0, 1)
+    I.mouseCooldown = I.mouseCooldown.approach(0, 1)
 
     return if I.state.mouse
 
     movement = Point(0, 0)
     inStream = false
 
-    if I.age > 10 && keydown.space
+    if I.age > 10 && keydown.space && !I.mouseCooldown
       player = engine.find("Player").first()
 
       pickupItem = engine.find("Item").select (item) ->
