@@ -16,6 +16,8 @@ Item = (I) ->
     else
       player = engine.find("Player").first()
 
+    return unless player
+
     if Collision.rectangular(self.bounds(), player.collisionBounds())
       if I.active
         player.pickup(self)
