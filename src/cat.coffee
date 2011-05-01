@@ -32,19 +32,7 @@ Cat = (I) ->
     mewDown = mewDown.approach(0, 1)
 
     movement = Point(0, 0)
-
-    if keydown.left
-      movement = movement.add(Point(-1, 0))
-      I.sprite = walkSprites.left.wrap((walkCycle/4).floor())
-    if keydown.right
-      movement = movement.add(Point(1, 0))
-      I.sprite = walkSprites.right.wrap((walkCycle/4).floor())
-    if keydown.up
-      movement = movement.add(Point(0, -1))
-      I.sprite = walkSprites.up.wrap((walkCycle/4).floor())
-    if keydown.down
-      movement = movement.add(Point(0, 1))
-      I.sprite = walkSprites.down.wrap((walkCycle/4).floor())
+    inStream = false
 
     if I.age > 10 && keydown.space
       player = engine.find("Player").first()
@@ -66,6 +54,35 @@ Cat = (I) ->
         unless mewDown
           Sound.play "mew"
           mewDown += 60
+
+    engine.find("Stream").select (tile) ->
+      Collision.rectangular(self.bounds(), tile.bounds())
+    .each (stream) ->
+      inStream = true
+      movement = movement.add(stream.I.flow)
+
+    if inStream
+      unless mewDown
+        Sound.play "mew"
+        mewDown += 30
+
+      if player = engine.find("Player").first()
+        player.I.state.cat = false
+
+      return
+
+    if keydown.left
+      movement = movement.add(Point(-1, 0))
+      I.sprite = walkSprites.left.wrap((walkCycle/4).floor())
+    if keydown.right
+      movement = movement.add(Point(1, 0))
+      I.sprite = walkSprites.right.wrap((walkCycle/4).floor())
+    if keydown.up
+      movement = movement.add(Point(0, -1))
+      I.sprite = walkSprites.up.wrap((walkCycle/4).floor())
+    if keydown.down
+      movement = movement.add(Point(0, 1))
+      I.sprite = walkSprites.down.wrap((walkCycle/4).floor())
 
     if movement.equal(Point(0, 0))
       I.velocity = movement
