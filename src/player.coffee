@@ -8,6 +8,7 @@ Player = (I) ->
     speed: 4
     items: {
       kitten: true
+      bomb: true
     }
     excludedModules: ["Movable"]
 
