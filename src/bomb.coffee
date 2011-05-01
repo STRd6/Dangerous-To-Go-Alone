@@ -10,6 +10,10 @@ Wall = (I) ->
       self.destroy()
 
   self.bind "destroy", ->
-
+    engine.find("BombDoor").select (door) ->
+      Collision.rectangular(self.bounds(), door.bounds())
+    .each (door) ->
+      door.open()
 
   self
+
