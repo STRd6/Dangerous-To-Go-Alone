@@ -19,6 +19,7 @@ Player = (I) ->
     left: [Sprite.loadByName("walk_left0"), Sprite.loadByName("walk_left1")]
 
   pickupSprite = Sprite.loadByName("player_get")
+  bombCooldown = 0
 
   pickupItem = null
 
@@ -70,6 +71,16 @@ Player = (I) ->
       if keydown.down
         movement = movement.add(Point(0, 1))
         I.sprite = walkSprites.down.wrap((walkCycle/4).floor())
+
+      if I.item.bomb && keydown.return && !bombCooldown
+        bombCooldown += 90
+
+        target = facing.scale(32).add(self.center()).subtract(Point(8, 8))
+
+        engine.add
+          class: "Bomb"
+          x: target.x
+          y: target.y
 
       if I.items.kitten && keydown.space
         target = facing.scale(32).add(self.center()).subtract(Point(8, 8))
