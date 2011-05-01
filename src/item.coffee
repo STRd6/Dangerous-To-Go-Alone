@@ -6,6 +6,7 @@ Item = (I) ->
   #TODO: This is a gross hack to center
   I.x += 8
   I.y += 8
+  I.x += 2 if I.cat
 
   self = GameObject(I)
 
