@@ -9,3 +9,7 @@ engine.loadMap "start", ->
 
 engine.start()
 
+parent.gameControlData =
+  Movement: "Arrow Keys"
+  "Deploy/Return Cat": "spacebar"
+
