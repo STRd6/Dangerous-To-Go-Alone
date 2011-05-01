@@ -81,7 +81,7 @@ Cat = (I) ->
         carriedItem.I.y = I.y
         Sound.play "pickup"
       else if I.items.mouse
-        target = facing.scale(32).add(self.center()).subtract(Point(8, 8))
+        target = facing.scale(32).add(self.center())
 
         mouseBounds =
           x: target.x
