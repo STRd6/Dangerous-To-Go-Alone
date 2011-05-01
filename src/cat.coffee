@@ -42,6 +42,10 @@ Cat = (I) ->
 
       Sound.play "fanfare"
 
+  self.bind "draw", (canvas) ->
+    if pickupCooldown && pickupItem
+      pickupItem.I.sprite.draw(canvas, 6, -6)
+
   self.bind "step", ->
     mewDown = mewDown.approach(0, 1)
     pickupCooldown = pickupCooldown.approach(0, 1)
