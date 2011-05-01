@@ -3,7 +3,7 @@ window.engine = Engine
   includedModules: "Tilemap"
 
 # Add a red square to the scene
-engine.loadMap "final_cave", ->
+engine.loadMap "start", ->
   engine.add
     class: "Player"
     location: "start"
