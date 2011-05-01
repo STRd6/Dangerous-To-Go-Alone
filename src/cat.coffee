@@ -110,5 +110,8 @@ Cat = (I) ->
         carriedItem.I.x = I.x
         carriedItem.I.y = I.y
 
+    I.x = I.x.clamp(0, 480 - I.width)
+    I.y = I.y.clamp(0, 320 - I.height)
+
   self
 
