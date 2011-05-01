@@ -44,6 +44,8 @@ Cat = (I) ->
     mewDown = mewDown.approach(0, 1)
     pickupCooldown = pickupCooldown.approach(0, 1)
 
+    return if I.state.mouse
+
     movement = Point(0, 0)
     inStream = false
 
@@ -84,8 +86,6 @@ Cat = (I) ->
 
     else if pickupCooldown
       I.sprite = pickupSprite
-    else if I.state.mouse
-
     else
       if keydown.left
         movement = movement.add(Point(-1, 0))
