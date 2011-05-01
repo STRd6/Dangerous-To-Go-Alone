@@ -57,7 +57,7 @@ Cat = (I) ->
           mewDown += 60
 
     engine.find("Stream").select (tile) ->
-      Collision.rectangular(self.bounds(), tile.bounds())
+      Collision.rectangular({x: I.x + 8, y: I.y + 8, width: 1, height: 1}, tile.bounds())
     .each (stream) ->
       inStream = true
       movement = movement.add(stream.I.flow)
