@@ -18254,6 +18254,14 @@ Player = function(I) {
       I.state.pickup = 45;
       pickupItem = item;
       I.items[item.I.name] = true;
+      if (item.I.message) {
+        engine.add({
+          "class": "Text",
+          duration: 150,
+          message: item.I.message,
+          y: 32
+        });
+      }
       return Sound.play("fanfare");
     }
   });
