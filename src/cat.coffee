@@ -59,6 +59,8 @@ Cat = (I) ->
         player.pickup self
       else if pickupItem
         carriedItem = pickupItem
+        carriedItem.I.x = I.x
+        carriedItem.I.y = I.y
         Sound.play "pickup"
       else
         unless mewDown
