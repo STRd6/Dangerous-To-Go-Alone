@@ -3,6 +3,8 @@ Bomb = (I) ->
     width: 16
     height: 16
 
+  I.sprite = Sprite.loadByName("bomb")
+
   self = GameObject(I)
 
   self.bind "step", ->
