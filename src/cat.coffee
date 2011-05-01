@@ -44,6 +44,8 @@ Cat = (I) ->
 
       I.items[item.I.name] = true
 
+      window.hasMouse = true
+
       Sound.play "fanfare"
 
   self.bind "draw", (canvas) ->
