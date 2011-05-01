@@ -4,7 +4,8 @@ Wall = (I) ->
     height: 32
     solid: true
 
-  if I.invisible I.sprite = Sprite.NONE
+  if I.invisible 
+    I.sprite = Sprite.NONE
 
   GameObject(I)
 
