@@ -17653,7 +17653,7 @@ SpeechBox = function(I) {
 ;$(function(){ undefined });;
 var Cat;
 Cat = function(I) {
-  var collisionMargin, self, walkCycle, walkSprites;
+  var collisionMargin, mewDown, self, walkCycle, walkSprites;
   $.reverseMerge(I, {
     width: 16,
     height: 16,
@@ -17665,6 +17665,7 @@ Cat = function(I) {
     y: 1
   };
   walkCycle = 0;
+  mewDown = 0;
   I.sprite = Sprite.loadByName("cat");
   walkSprites = {
     up: [Sprite.loadByName("cat_walk_up0"), Sprite.loadByName("cat_walk_up1")],
@@ -17684,6 +17685,7 @@ Cat = function(I) {
   });
   self.bind("step", function() {
     var movement, player;
+    mewDown = mewDown.approach(0, 1);
     movement = Point(0, 0);
     if (keydown.left) {
       movement = movement.add(Point(-1, 0));
@@ -17707,6 +17709,11 @@ Cat = function(I) {
         I.active = false;
         player.I.state.cat = false;
         player.pickup(self);
+      } else {
+        if (!(mewDown)) {
+          Sound.play("mew");
+          mewDown += 60;
+        }
       }
     }
     if (movement.equal(Point(0, 0))) {
@@ -18159,7 +18166,49 @@ Wall = function(I) {
   });
   return GameObject(I);
 };;
-;$(function(){ window.engine = Engine({
+var Lever;
+Lever = function(I) {
+  var self;
+  $.reverseMerge(I, {
+    width: 32,
+    height: 32,
+    triggered: false
+  });
+  if (leverTriggered(I.id)) {
+    I.sprite = Sprite.loadByName("lever_triggered");
+  }
+  self = GameObject(I);
+  self.bind("step", function() {
+    var player;
+    if (!(I.triggered)) {
+      player = engine.find("Cat").first();
+      if (player && Collision.rectangular(self.bounds(), player.collisionBounds())) {
+        I.triggered = true;
+        triggerLever(I.id);
+        I.sprite = Sprite.loadByName("lever_triggered");
+        return Sound.play("trigger");
+      }
+    }
+  });
+  return self;
+};;
+var Gate;
+Gate = function(I) {
+  var self;
+  $.reverseMerge(I, {
+    width: 32,
+    height: 32,
+    solid: true
+  });
+  if (leverTriggered(I.lever)) {
+    I.sprite = Sprite.NONE;
+    I.solid = false;
+  }
+  self = GameObject(I);
+  return self;
+};;
+;$(function(){ var leversTriggered;
+window.engine = Engine({
   canvas: $("canvas").powerCanvas(),
   includedModules: "Tilemap"
 });
@@ -18169,6 +18218,13 @@ engine.loadMap("start", function() {
   });
 });
 engine.start();
+leversTriggered = {};
+window.triggerLever = function(name) {
+  return (leversTriggered[name] = true);
+};
+window.leverTriggered = function(name) {
+  return leversTriggered[name];
+};
 parent.gameControlData = {
   Movement: "Arrow Keys",
   "Deploy/Return Cat": "Spacebar"
