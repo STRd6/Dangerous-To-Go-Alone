@@ -13,6 +13,9 @@ Door = (I) ->
     else
       player = engine.find("Player").first()
 
+      # Player can't exit if cat is about
+      return if engine.find("Cat").first()
+
     if player && Collision.rectangular(self.bounds(), player.collisionBounds())
       engine.loadMap I.destination, ->
         player.I.location = I.destination
