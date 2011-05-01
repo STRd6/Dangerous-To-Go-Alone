@@ -3,6 +3,10 @@ Item = (I) ->
     width: 16
     height: 16
 
+  #TODO: This is a gross hack to center
+  I.x += 8
+  I.y += 8
+
   self = GameObject(I)
 
   self.bind "step", ->
