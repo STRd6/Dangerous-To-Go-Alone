@@ -6,6 +6,7 @@ MousePlayer = (I) ->
     speed: 1
     excludedModules: ["Movable"]
 
+  cooldown = 0
   collisionMargin =
     x: 2
     y: 1
