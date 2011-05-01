@@ -15,8 +15,13 @@ Door = (I) ->
 
     if player && Collision.rectangular(self.bounds(), player.collisionBounds())
       engine.loadMap I.destination, ->
+        player.I.location = I.destination
+
         # Pretty hacky...
         engine.add player.I
+
+        if I.cat && player.I.playerData.location == I.destination
+          engine.add player.I.playerData
 
       if I.destinationPosition
         player.I.x = I.destinationPosition.x
