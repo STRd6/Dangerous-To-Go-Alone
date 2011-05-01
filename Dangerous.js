@@ -17752,7 +17752,9 @@ Door = function(I) {
     }
     if (player && Collision.rectangular(self.bounds(), player.collisionBounds())) {
       engine.loadMap(I.destination, function() {
-        return engine.add(player.I);
+        player.I.location = I.destination;
+        engine.add(player.I);
+        return I.cat && player.I.playerData.location === I.destination ? engine.add(player.I.playerData) : null;
       });
       if (I.destinationPosition) {
         player.I.x = I.destinationPosition.x;
@@ -17851,6 +17853,21 @@ Engine.Tilemap = function(I, self) {
     }
   };
 };;
+var Gate;
+Gate = function(I) {
+  var self;
+  $.reverseMerge(I, {
+    width: 32,
+    height: 32,
+    solid: true
+  });
+  if (leverTriggered(I.lever)) {
+    I.sprite = Sprite.NONE;
+    I.solid = false;
+  }
+  self = GameObject(I);
+  return self;
+};;
 var Item;
 Item = function(I) {
   var self;
@@ -17866,6 +17883,32 @@ Item = function(I) {
       if (I.active) {
         player.pickup(self);
         return (I.active = false);
+      }
+    }
+  });
+  return self;
+};;
+var Lever;
+Lever = function(I) {
+  var self;
+  $.reverseMerge(I, {
+    width: 32,
+    height: 32,
+    triggered: false
+  });
+  if (leverTriggered(I.id)) {
+    I.sprite = Sprite.loadByName("lever_triggered");
+  }
+  self = GameObject(I);
+  self.bind("step", function() {
+    var player;
+    if (!(I.triggered)) {
+      player = engine.find("Cat").first();
+      if (player && Collision.rectangular(self.bounds(), player.collisionBounds())) {
+        I.triggered = true;
+        triggerLever(I.id);
+        I.sprite = Sprite.loadByName("lever_triggered");
+        return Sound.play("trigger");
       }
     }
   });
@@ -17955,6 +17998,7 @@ Player = function(I) {
           I.state.cat = true;
           engine.add({
             "class": "Cat",
+            playerData: I,
             x: target.x,
             y: target.y
           });
@@ -18166,47 +18210,6 @@ Wall = function(I) {
   });
   return GameObject(I);
 };;
-var Lever;
-Lever = function(I) {
-  var self;
-  $.reverseMerge(I, {
-    width: 32,
-    height: 32,
-    triggered: false
-  });
-  if (leverTriggered(I.id)) {
-    I.sprite = Sprite.loadByName("lever_triggered");
-  }
-  self = GameObject(I);
-  self.bind("step", function() {
-    var player;
-    if (!(I.triggered)) {
-      player = engine.find("Cat").first();
-      if (player && Collision.rectangular(self.bounds(), player.collisionBounds())) {
-        I.triggered = true;
-        triggerLever(I.id);
-        I.sprite = Sprite.loadByName("lever_triggered");
-        return Sound.play("trigger");
-      }
-    }
-  });
-  return self;
-};;
-var Gate;
-Gate = function(I) {
-  var self;
-  $.reverseMerge(I, {
-    width: 32,
-    height: 32,
-    solid: true
-  });
-  if (leverTriggered(I.lever)) {
-    I.sprite = Sprite.NONE;
-    I.solid = false;
-  }
-  self = GameObject(I);
-  return self;
-};;
 ;$(function(){ var leversTriggered;
 window.engine = Engine({
   canvas: $("canvas").powerCanvas(),
@@ -18214,7 +18217,8 @@ window.engine = Engine({
 });
 engine.loadMap("start", function() {
   return engine.add({
-    "class": "Player"
+    "class": "Player",
+    location: "start"
   });
 });
 engine.start();
