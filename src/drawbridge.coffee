@@ -6,7 +6,9 @@ Drawbridge = (I) ->
 
   I.sprite = Sprite.NONE
 
-  #TODO Trigger lowering
+  if leverTriggered "bridgeLever"
+    I.sprite = Sprite.loadByName("bridge")
+    I.solid = false
 
   GameObject(I)
 
