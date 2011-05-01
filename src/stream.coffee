@@ -5,9 +5,10 @@ Stream = (I) ->
 
   self = GameObject(I).extend
     draw: (canvas) ->
-      offset = (-I.age/2).floor().mod(32)
+      offsetY = (-I.flow.y * I.age/2).floor().mod(32)
+      offsetX = (-I.flow.x * I.age/2).floor().mod(32)
       source = Stream.fillSource.element()
-      canvas.drawImage source, 0, offset, I.width, I.height, I.x, I.y, I.width, I.height
+      canvas.drawImage source, 0, offsetY, I.width, I.height, I.x, I.y, I.width, I.height
 
   unless Stream.fillSource
     Stream.fillSource = $("<canvas width='128' height='128'></canvas>").powerCanvas()
